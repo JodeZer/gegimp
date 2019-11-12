@@ -1,0 +1,18 @@
+filePath = '/Users/zhujiafeng/SIAT/gimp_test/origin.jpg'
+
+outputFile = '/Users/zhujiafeng/SIAT/gimp_test/python_fu_test.jpg'
+imgIns = pdb.gimp_file_load(filePath, filePath, run_mode=1)
+imgInsDrawable = pdb.gimp_image_get_active_drawable(imgIns)
+
+pdb.gimp_drawable_color_balance(imgInsDrawable, 1, True, 100,0,0)
+pdb.gimp_file_save(imgIns, imgInsDrawable, outputFile, outputFile)
+pdb.gimp_image_delete(imgIns)
+
+gimp210 -idf --batch-interpreter python-fu-eval -b "filePath = '/Users/zhujiafeng/SIAT/gimp_test/origin.jpg';outputFile = '/Users/zhujiafeng/SIAT/gimp_test/python_fu_test.jpg'; imgIns = pdb.gimp_file_load(filePath, filePath, run_mode=1);imgInsDrawable = pdb.gimp_image_get_active_drawable(imgIns);pdb.gimp_drawable_color_balance(imgInsDrawable, 1, True, 100,0,0);pdb.gimp_file_save(imgIns, imgInsDrawable, outputFile, outputFile);pdb.gimp_image_delete(imgIns)" -b "pdb.gimp_quit(1)"
+
+
+
+
+gimp -idf --batch-interpreter python-fu-eval -b "filePath = '/Users/zhujiafeng/SIAT/gimp_test/origin.jpg';outputFile = '/Users/zhujiafeng/SIAT/gimp_test/python_fu_test.jpg';" -b "pdb.gimp_quit(1)"
+
+"gimp -idf --batch-interpreter python-fu-eval -b \"filePath = '/Users/zhujiafeng/SIAT/gimp_test/origin.jpg';outputFile = '/Users/zhujiafeng/SIAT/gimp_test/python_fu_test.jpg';\" -b \"pdb.gimp_quit(1)\" "

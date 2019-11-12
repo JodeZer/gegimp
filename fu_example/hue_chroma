@@ -1,0 +1,7 @@
+
+
+gegl /Users/zhujiafeng/SIAT/gimp_test/origin.jpg -o /Users/zhujiafeng/SIAT/gimp_test/gegl_hue_chroma_cmd_test.jpg -- hue-chroma hue=20.00 chroma=100.00 lightness=50.00
+
+
+
+gegl /Users/zhujiafeng/SIAT/gimp_test/origin.jpg -o /Users/zhujiafeng/SIAT/gimp_test/gegl_mulcmd_test.jpg -- color-temperature original-temperature=10000 intended-temperature=4000 saturation scale=3.0
