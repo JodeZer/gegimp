@@ -1,10 +1,13 @@
 import tempfile
 import command
+
+
 class CmdSet():
     def __init__(self, infile, outfile):
         self.cmds = []
         self.infile = infile
         self.outfile = outfile
+        self.suffix = infile[-4:]
 
     def append(self, cmd):
         self.cmds.append(cmd)
@@ -36,7 +39,7 @@ class CmdSet():
             cmd.setIOFile(self.infile, self.outfile)
             return cmd.exec()
 
-        tmpf = tempfile.NamedTemporaryFile(delete=True)
+        tmpf = tempfile.NamedTemporaryFile(delete=True, suffix=self.suffix)
         self.cmds[0].setIOFile(self.infile, tmpf.name)
         assert self.cmds[0].exec() == 0
 
@@ -47,7 +50,3 @@ class CmdSet():
         assert self.cmds[-1].exec() == 0
 
         tmpf.close()
-
-
-
-

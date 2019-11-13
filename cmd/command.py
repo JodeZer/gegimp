@@ -1,13 +1,15 @@
 import subprocess
 from enum import Enum
 
-
 '''
 enum define
 '''
+
+
 class Cmd_Type(Enum):
-        GIMP = 1
-        GEGL = 2
+    GIMP = 1
+    GEGL = 2
+
 
 '''
 TODO package config
@@ -16,20 +18,28 @@ RUNNABLE_SHELL = '/bin/zsh'
 GIMP_EXECUTE = '/Applications/GIMP-2.10.app/Contents/MacOS/GIMP'
 GEGL_EXECUTE = '/usr/local/bin/gegl'
 
+
+def SetEnvConf(shell, gimp_bin, gegl_bin):
+    global RUNNABLE_SHELL, GIMP_EXECUTE, GEGL_EXECUTE
+    RUNNABLE_SHELL = shell
+    GIMP_EXECUTE = gimp_bin
+    GEGL_EXECUTE = gegl_bin
+
+
 '''
 TODO index
 '''
-CMD_COLOR_BALANCE = 0x0001
+CMD_GIMP_COLOR_BALANCE = 0x0001
 
-g_Cmd_List = [
-    CMD_COLOR_BALANCE,
-]
+CMD_GEGL_COLOR_TEMP = 0x1001
+CMD_GEGL_SATURATION = 0x1002
 
 '''
 Abstract Command
 GimpCommand: invoke through `gimp` command by `python-fu-eval` interpreter
 GeglCommand: invoke through `gegl` command
 '''
+
 
 class Command():
     def __init__(self):
@@ -39,6 +49,7 @@ class Command():
     def setIOFile(self, infile, outfile):
         self.infile = infile
         self.outfile = outfile
+
 
 class GimpCommand(Command):
     def __init__(self):
@@ -53,13 +64,14 @@ class GimpCommand(Command):
         self.exec_str = self.exec_template.format(self.cmd_str)
         print("self.exec_str", self.exec_str)
 
-        result = subprocess.call(self.exec_str,shell=True)
+        result = subprocess.call(self.exec_str, shell=True)
         print("result", result)
         return result
         # shSplits = shlex.split(self.exec_str)
         # print("shSplits", shSplits)
         # result = subprocess.run(shSplits, shell=True, executable=RUNNABLE_SHELL)
         # print("result.stdout" , result.stdout)
+
 
 class GeglCommand(Command):
     def __init__(self):
@@ -79,6 +91,7 @@ class GeglCommand(Command):
         print("result", result)
         return result
 
+
 '''
 gimp commands
 '''
@@ -90,13 +103,14 @@ cyan_red          FLOAT Cyan-Red color balance (-100 <= cyan-red <= 100)
 magenta_green     FLOAT Magenta-Green color balance (-100 <= magenta-green <= 100)
 yellow_blue       FLOAT Yellow-Blue color balance (-100 <= yellow-blue <= 100)
 '''
+
+
 class Cmd_gimp_color_balance(GimpCommand):
 
     def __init__(self, preserve_lum=True, cyan_red=0, magenta_green=0, yellow_blue=0):
         super(Cmd_gimp_color_balance, self).__init__()
         self.template = "filePath = '{}';outputFile = '{}'; imgIns = pdb.gimp_file_load(filePath, filePath, run_mode=1);imgInsDrawable = pdb.gimp_image_get_active_drawable(imgIns);pdb.gimp_drawable_color_balance(imgInsDrawable, 1, {}, {},{},{});pdb.gimp_file_save(imgIns, imgInsDrawable, outputFile, outputFile);pdb.gimp_image_delete(imgIns)"
         self.setParam(preserve_lum, cyan_red, magenta_green, yellow_blue)
-
 
     def setParam(self, preserve_lum, cyan_red=0, magenta_green=0, yellow_blue=0):
         self.preserve_lum = preserve_lum
@@ -105,21 +119,21 @@ class Cmd_gimp_color_balance(GimpCommand):
         self.yellow_blue = yellow_blue
 
     def gen(self):
-        cmd_str = self.template.format(self.infile, self.outfile, self.preserve_lum, self.cyan_red, self.magenta_green, self.yellow_blue)
+        cmd_str = self.template.format(self.infile, self.outfile, self.preserve_lum, self.cyan_red, self.magenta_green,
+                                       self.yellow_blue)
         print(cmd_str)
         self.cmd_str = cmd_str
 
     def exec(self):
         self.gen()
-        super().execute()
-
-
-
+        return super().execute()
 
 
 '''
 gegl commands
 '''
+
+
 class Cmd_gegl_color_temperature(GeglCommand):
     def __init__(self, original_temperature=0, intended_temperature=0):
         super(Cmd_gegl_color_temperature, self).__init__()
@@ -128,16 +142,17 @@ class Cmd_gegl_color_temperature(GeglCommand):
         self.intended_temperature = intended_temperature
 
     def _gen_param(self):
-        self.cmd_para = ' original-temperature={} intended-temperature={} '.format(self.original_temperature, self.intended_temperature)
-
+        self.cmd_para = ' original-temperature={} intended-temperature={} '.format(self.original_temperature,
+                                                                                   self.intended_temperature)
 
     def exec(self):
         self._gen_param()
         self.fill(self.operation + self.cmd_para)
-        self.execute()
+        return self.execute()
+
 
 class Cmd_gegl_saturation(GeglCommand):
-    def __init__(self, scale = 0):
+    def __init__(self, scale=0):
         super(Cmd_gegl_saturation, self).__init__()
         self.scale = scale
         self.operation = 'saturation'
@@ -148,7 +163,8 @@ class Cmd_gegl_saturation(GeglCommand):
     def exec(self):
         self._gen_param()
         self.fill(self.operation + self.cmd_para)
-        self.execute()
+        return self.execute()
+
 
 class Cmd_gegl_aggregation(GeglCommand):
     def __init__(self, geglCommands):
@@ -165,4 +181,4 @@ class Cmd_gegl_aggregation(GeglCommand):
     def exec(self):
         self.__gen_param()
         self.fill(self.cmd_para)
-        self.execute()
+        return self.execute()
